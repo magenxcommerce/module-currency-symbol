@@ -187,16 +187,14 @@ class Currencysymbol
     /**
      * Save currency symbol to config
      *
-     * @param array $symbols
+     * @param  $symbols array
      * @return $this
      */
     public function setCurrencySymbolsData($symbols = [])
     {
-        if (!$this->_storeManager->isSingleStoreMode()) {
-            foreach ($this->getCurrencySymbolsData() as $code => $values) {
-                if (isset($symbols[$code]) && ($symbols[$code] == $values['parentSymbol'] || empty($symbols[$code]))) {
-                    unset($symbols[$code]);
-                }
+        foreach ($this->getCurrencySymbolsData() as $code => $values) {
+            if (isset($symbols[$code]) && ($symbols[$code] == $values['parentSymbol'] || empty($symbols[$code]))) {
+                unset($symbols[$code]);
             }
         }
         $value = [];
@@ -292,8 +290,7 @@ class Currencysymbol
      */
     protected function getAllowedCurrencies()
     {
-        $allowedCurrencies = [[]];
-        $allowedCurrencies[] = explode(
+        $allowedCurrencies = explode(
             self::ALLOWED_CURRENCIES_CONFIG_SEPARATOR,
             $this->_scopeConfig->getValue(
                 self::XML_PATH_ALLOWED_CURRENCIES,
@@ -319,17 +316,23 @@ class Currencysymbol
                     if (!$websiteShow) {
                         $websiteShow = true;
                         $websiteSymbols = $website->getConfig(self::XML_PATH_ALLOWED_CURRENCIES);
-                        $allowedCurrencies[] = explode(self::ALLOWED_CURRENCIES_CONFIG_SEPARATOR, $websiteSymbols);
+                        $allowedCurrencies = array_merge(
+                            $allowedCurrencies,
+                            explode(self::ALLOWED_CURRENCIES_CONFIG_SEPARATOR, $websiteSymbols)
+                        );
                     }
                     $storeSymbols = $this->_scopeConfig->getValue(
                         self::XML_PATH_ALLOWED_CURRENCIES,
                         \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
                         $store
                     );
-                    $allowedCurrencies[] = explode(self::ALLOWED_CURRENCIES_CONFIG_SEPARATOR, $storeSymbols);
+                    $allowedCurrencies = array_merge(
+                        $allowedCurrencies,
+                        explode(self::ALLOWED_CURRENCIES_CONFIG_SEPARATOR, $storeSymbols)
+                    );
                 }
             }
         }
-        return array_unique(array_merge(...$allowedCurrencies));
+        return array_unique($allowedCurrencies);
     }
 }
